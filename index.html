@@ -1,104 +1,579 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#17365D">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=20261005-2">
-  <title>Reporte de Atención de Reclamos</title>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#17365D"
+  >
+
+  <meta
+    name="description"
+    content="Reporte de Atención de Reclamos"
+  >
+
+  <title>
+    Reporte de Atención de Reclamos
+  </title>
+
+
+  <!-- =====================================================
+       CONFIGURACIÓN DE GOOGLE APPS SCRIPT
+       =====================================================
+
+       IMPORTANTE:
+       Debes colocar aquí la URL REAL de tu implementación
+       de Google Apps Script.
+
+       Debe terminar en:
+
+       /exec
+
+       NO debe terminar en:
+
+       /dev
+  ====================================================== -->
+
+  <script>
+
+    window.APP_CONFIG = {
+
+      APPS_SCRIPT_URL:
+        "PEGAR_AQUI_LA_URL_REAL_DE_APPS_SCRIPT/exec"
+
+    };
+
+  </script>
+
+
+  <!-- =====================================================
+       ESTILOS
+  ====================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="styles.css?v=25"
+  >
+
+
+  <!-- =====================================================
+       MANIFEST
+  ====================================================== -->
+
+  <link
+    rel="manifest"
+    href="manifest.json?v=25"
+  >
+
 </head>
+
+
 <body>
+
+
+  <!-- =====================================================
+       ENCABEZADO
+  ====================================================== -->
+
   <header class="app-header">
-    <div class="eyebrow">ASEGURAMIENTO DE LA CALIDAD</div>
-    <h1>Reporte de Atención de Reclamos</h1>
-    <div class="code">F-PR-AC-14.2 · Revisión 2 · Enero 2025</div>
+
+    <div>
+
+      <h1>
+        Reporte de Atención de Reclamos
+      </h1>
+
+      <div id="status">
+        Listo para registrar un reclamo.
+      </div>
+
+    </div>
+
   </header>
 
+
+  <!-- =====================================================
+       CONTENIDO PRINCIPAL
+  ====================================================== -->
+
   <main class="container">
-    <div id="status" class="status">Listo para registrar un reclamo.</div>
+
+
+    <!-- ===================================================
+         DATOS GENERALES
+    ==================================================== -->
 
     <section class="card">
-      <h2>1. Datos generales</h2>
+
+      <h2>
+        Datos generales
+      </h2>
+
+
       <div class="grid">
-        <label>N° Reporte<input id="nReporte" placeholder="Ej.: 030-26"></label>
-        <label>Fecha<input id="fecha" type="date"></label>
-        <label>Cliente<input id="cliente" placeholder="Nombre del cliente"></label>
-        <label>N° de Reporte de reclamo (RRCL Ventas)<input id="rrcl" placeholder="Ej.: 001384"></label>
-        <label>Fecha de recepción de reclamo<input id="fechaRecepcion" type="date"></label>
-        <label>Fecha de atención de reclamo (AC)<input id="fechaAtencion" type="date"></label>
-        <label>N° de factura<input id="factura"></label>
-        <label>Vendedor<input id="vendedor"></label>
-        <label class="full">Descripción del reclamo<textarea id="descripcionReclamo" rows="3" placeholder="Ej.: Devolución del cliente."></textarea></label>
+
+
+        <label>
+
+          N.° de reporte
+
+          <input
+            id="nReporte"
+            type="text"
+            placeholder="Ingrese número de reporte"
+          >
+
+        </label>
+
+
+        <label>
+
+          Fecha
+
+          <input
+            id="fecha"
+            type="date"
+          >
+
+        </label>
+
+
+        <label>
+
+          Cliente
+
+          <input
+            id="cliente"
+            type="text"
+            placeholder="Nombre del cliente"
+          >
+
+        </label>
+
+
+        <label>
+
+          RRCL
+
+          <input
+            id="rrcl"
+            type="text"
+            placeholder="RRCL"
+          >
+
+        </label>
+
+
+        <label>
+
+          Fecha de recepción
+
+          <input
+            id="fechaRecepcion"
+            type="date"
+          >
+
+        </label>
+
+
+        <label>
+
+          Fecha de atención
+
+          <input
+            id="fechaAtencion"
+            type="date"
+          >
+
+        </label>
+
+
+        <label>
+
+          Factura
+
+          <input
+            id="factura"
+            type="text"
+            placeholder="N.° de factura"
+          >
+
+        </label>
+
+
+        <label>
+
+          Vendedor
+
+          <input
+            id="vendedor"
+            type="text"
+            placeholder="Nombre del vendedor"
+          >
+
+        </label>
+
+
       </div>
+
+
+      <label>
+
+        Descripción del reclamo
+
+        <textarea
+          id="descripcionReclamo"
+          rows="4"
+          placeholder="Describa el reclamo"
+        ></textarea>
+
+      </label>
+
     </section>
 
+
+    <!-- ===================================================
+         PRODUCTOS
+    ==================================================== -->
+
     <section class="card">
+
       <div class="section-head">
-        <div>
-          <h2>2. Productos involucrados</h2>
-          <p>Registra cada producto con su lote, FV y cantidad.</p>
-        </div>
-        <button class="secondary" id="addProduct">+ Agregar producto</button>
+
+        <h2>
+          Productos involucrados
+        </h2>
+
+        <button
+          id="addProduct"
+          type="button"
+          class="primary"
+        >
+          + Agregar producto
+        </button>
+
       </div>
+
+
       <div class="table-wrap">
-        <table id="productsTable">
+
+        <table
+          id="productsTable"
+          class="data-table"
+        >
+
           <thead>
-            <tr><th>Ítem</th><th>Producto</th><th>Lote</th><th>FV</th><th>Cantidad</th><th></th></tr>
+
+            <tr>
+
+              <th>
+                ÍTEM
+              </th>
+
+              <th>
+                PRODUCTO
+              </th>
+
+              <th>
+                LOTE
+              </th>
+
+              <th>
+                FV
+              </th>
+
+              <th>
+                CANTIDAD
+              </th>
+
+              <th>
+                ACCIÓN
+              </th>
+
+            </tr>
+
           </thead>
-          <tbody></tbody>
+
+
+          <tbody>
+          </tbody>
+
         </table>
+
       </div>
+
     </section>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>3. Hallazgos y evidencia fotográfica</h2>
-          <p>Cada ítem tiene sus propias fotos. Puedes tomar la foto con la cámara del celular o seleccionar una imagen.</p>
-        </div>
-      </div>
-      <div id="findings"></div>
-    </section>
+
+    <!-- ===================================================
+         HALLAZGOS Y FOTOGRAFÍAS
+    ==================================================== -->
 
     <section class="card">
-      <h2>4. Cierre del reporte</h2>
+
+      <h2>
+        Hallazgos y evidencia fotográfica
+      </h2>
+
+      <div id="findings">
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CIERRE DEL RECLAMO
+    ==================================================== -->
+
+    <section class="card">
+
+      <h2>
+        Cierre del reclamo
+      </h2>
+
+
       <div class="grid">
-        <label>13. Destino del producto
+
+
+        <label>
+
+          Destino del producto
+
           <select id="destino">
-            <option value="">Seleccione...</option>
-            <option>Desecho</option>
-            <option>Devolución al proveedor</option>
-            <option>Reproceso</option>
-            <option>Retención</option>
-            <option>Otro</option>
+
+            <option value="">
+              Seleccione...
+            </option>
+
+            <option value="DEVOLUCIÓN">
+              DEVOLUCIÓN
+            </option>
+
+            <option value="DESTRUCCIÓN">
+              DESTRUCCIÓN
+            </option>
+
+            <option value="REPOSICIÓN">
+              REPOSICIÓN
+            </option>
+
+            <option value="OTRO">
+              OTRO
+            </option>
+
           </select>
+
         </label>
-        <label>Conclusión
-          <select id="conclusion">
-            <option value="">Automática según los ítems</option>
-            <option>PROCEDE</option>
-            <option>NO PROCEDE</option>
-          </select>
+
+
+        <label>
+
+          Conclusión
+
+          <input
+            id="conclusion"
+            type="text"
+            readonly
+          >
+
         </label>
-        <label class="full">15. Acción correctiva<textarea id="accionCorrectiva" rows="5" placeholder="Describa la acción correctiva."></textarea></label>
-        <label>Preparado por<input id="preparadoPor" value="Katherine Correa Palacios" readonly></label>
-        <label>Aprobado por<input id="aprobadoPor" value="Isaias Castillo Belleza" readonly></label>
+
+
       </div>
+
+
+      <label>
+
+        Acción correctiva
+
+        <textarea
+          id="accionCorrectiva"
+          rows="4"
+          placeholder="Describa la acción correctiva"
+        ></textarea>
+
+      </label>
+
+
+      <div class="grid">
+
+
+        <label>
+
+          Preparado por
+
+          <input
+            id="preparadoPor"
+            type="text"
+            value="Ing. Katherine Correa Palacios"
+          >
+
+        </label>
+
+
+        <label>
+
+          Aprobado por
+
+          <input
+            id="aprobadoPor"
+            type="text"
+            value="Mblgo. Isaias Castillo B."
+          >
+
+        </label>
+
+
+      </div>
+
     </section>
 
-    <section class="actions">
-      <button class="primary big" id="generate">GENERAR REPORTE PDF</button>
-      <button class="secondary" id="saveDraft">GUARDAR BORRADOR EN ESTE CELULAR</button>
-      <button class="secondary" id="loadDraft">CARGAR BORRADOR</button>
-      <button class="danger" id="clearDraft">BORRAR BORRADOR</button>
+
+    <!-- ===================================================
+         ACCIONES
+    ==================================================== -->
+
+    <section class="card actions-card">
+
+
+      <button
+        id="generate"
+        type="button"
+        class="primary big"
+      >
+        📄 GENERAR REPORTE
+      </button>
+
+
+      <div class="secondary-actions">
+
+
+        <button
+          id="saveDraft"
+          type="button"
+          class="secondary"
+        >
+          💾 Guardar borrador
+        </button>
+
+
+        <button
+          id="loadDraft"
+          type="button"
+          class="secondary"
+        >
+          📂 Cargar borrador
+        </button>
+
+
+        <button
+          id="clearDraft"
+          type="button"
+          class="danger"
+        >
+          🗑 Borrar borrador
+        </button>
+
+
+      </div>
+
+
     </section>
 
-    <div id="progress" class="progress hidden"></div>
-    <div id="result" class="result"></div>
+
+    <!-- ===================================================
+         PROGRESO
+    ==================================================== -->
+
+    <section
+      id="progress"
+      class="progress hidden"
+    >
+      Preparando...
+    </section>
+
+
+    <!-- ===================================================
+         RESULTADO
+    ==================================================== -->
+
+    <section
+      id="result"
+      class="result"
+    >
+    </section>
+
+
   </main>
 
-  <script src="config.js?v=20261005-2"></script>
-  <script src="app.js?v=20261005-2"></script>
+
+  <!-- =====================================================
+       PIE
+  ====================================================== -->
+
+  <footer>
+
+    <small>
+      Reporte de Atención de Reclamos
+    </small>
+
+  </footer>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ======================================================
+
+       IMPORTANTE:
+       app.js se carga DESPUÉS de APP_CONFIG.
+  ====================================================== -->
+
+  <script src="app.js?v=25"></script>
+
+
+  <!-- =====================================================
+       SERVICE WORKER
+  ====================================================== -->
+
+  <script>
+
+    if (
+      "serviceWorker" in navigator
+    ) {
+
+      window.addEventListener(
+        "load",
+        () => {
+
+          navigator.serviceWorker
+            .register(
+              "./service-worker.js?v=25"
+            )
+            .catch(
+              error => {
+                console.warn(
+                  "Service Worker:",
+                  error
+                );
+              }
+            );
+
+        }
+      );
+
+    }
+
+  </script>
+
+
 </body>
+
 </html>
