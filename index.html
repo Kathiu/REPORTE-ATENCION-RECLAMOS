@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17365D">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <title>Reporte de Atención de Reclamos</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="eyebrow">ASEGURAMIENTO DE LA CALIDAD</div>
+    <h1>Reporte de Atención de Reclamos</h1>
+    <div class="code">F-PR-AC-14.2 · Revisión 2 · Enero 2025</div>
+  </header>
+
+  <main class="container">
+    <div id="status" class="status">Listo para registrar un reclamo.</div>
+
+    <section class="card">
+      <h2>1. Datos generales</h2>
+      <div class="grid">
+        <label>N° Reporte<input id="nReporte" placeholder="Ej.: 030-26"></label>
+        <label>Fecha<input id="fecha" type="date"></label>
+        <label>Cliente<input id="cliente" placeholder="Nombre del cliente"></label>
+        <label>N° de Reporte de reclamo (RRCL Ventas)<input id="rrcl" placeholder="Ej.: 001384"></label>
+        <label>Fecha de recepción de reclamo<input id="fechaRecepcion" type="date"></label>
+        <label>Fecha de atención de reclamo (AC)<input id="fechaAtencion" type="date"></label>
+        <label>N° de factura<input id="factura"></label>
+        <label>Vendedor<input id="vendedor"></label>
+        <label class="full">Descripción del reclamo<textarea id="descripcionReclamo" rows="3" placeholder="Ej.: Devolución del cliente."></textarea></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>2. Productos involucrados</h2>
+          <p>Registra cada producto con su lote, FV y cantidad.</p>
+        </div>
+        <button class="secondary" id="addProduct">+ Agregar producto</button>
+      </div>
+      <div class="table-wrap">
+        <table id="productsTable">
+          <thead>
+            <tr><th>Ítem</th><th>Producto</th><th>Lote</th><th>FV</th><th>Cantidad</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>3. Hallazgos y evidencia fotográfica</h2>
+          <p>Cada ítem tiene sus propias fotos. Puedes tomar la foto con la cámara del celular o seleccionar una imagen.</p>
+        </div>
+      </div>
+      <div id="findings"></div>
+    </section>
+
+    <section class="card">
+      <h2>4. Cierre del reporte</h2>
+      <div class="grid">
+        <label>13. Destino del producto
+          <select id="destino">
+            <option value="">Seleccione...</option>
+            <option>Desecho</option>
+            <option>Devolución al proveedor</option>
+            <option>Reproceso</option>
+            <option>Retención</option>
+            <option>Otro</option>
+          </select>
+        </label>
+        <label>Conclusión
+          <select id="conclusion">
+            <option value="">Automática según los ítems</option>
+            <option>PROCEDE</option>
+            <option>NO PROCEDE</option>
+          </select>
+        </label>
+        <label class="full">15. Acción correctiva<textarea id="accionCorrectiva" rows="5" placeholder="Describa la acción correctiva."></textarea></label>
+        <label>Preparado por<input id="preparadoPor"></label>
+        <label>Aprobado por<input id="aprobadoPor"></label>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button class="primary big" id="generate">GENERAR REPORTE PDF</button>
+      <button class="secondary" id="saveDraft">GUARDAR BORRADOR EN ESTE CELULAR</button>
+      <button class="secondary" id="loadDraft">CARGAR BORRADOR</button>
+      <button class="danger" id="clearDraft">BORRAR BORRADOR</button>
+    </section>
+
+    <div id="progress" class="progress hidden"></div>
+    <div id="result" class="result"></div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

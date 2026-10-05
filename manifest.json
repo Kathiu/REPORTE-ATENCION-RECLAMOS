@@ -1,0 +1,10 @@
+{
+  "name":"Reporte de Atención de Reclamos",
+  "short_name":"Reclamos",
+  "start_url":"./",
+  "display":"standalone",
+  "orientation":"portrait",
+  "theme_color":"#17365D",
+  "background_color":"#f5f7fa",
+  "icons":[]
+}
