@@ -18,9 +18,33 @@ function todayISO() {
 if ($("fecha")) $("fecha").value = todayISO();
 if ($("fechaAtencion")) $("fechaAtencion").value = todayISO();
 
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+
 function itemLetter(i) {
   return String.fromCharCode(65 + i);
 }
+
+function esc(v) {
+  return String(v ?? "").replace(
+    /[&<>"']/g,
+    m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[m])
+  );
+}
+
+function getValue(id) {
+  const el = $(id);
+  return el ? el.value.trim() : "";
+}
+
 
 /* =========================================================
    PRODUCTOS
@@ -35,16 +59,23 @@ function addProduct(data = {}) {
     cantidad: data.cantidad || "",
     hallazgo: data.hallazgo || "",
     decision: data.decision || "",
-    photos: Array.isArray(data.photos) ? data.photos : []
+    photos: Array.isArray(data.photos)
+      ? data.photos
+      : []
   });
 
   renderProducts();
   renderFindings();
 }
 
+
 function removeProduct(i) {
 
-  if (!confirm(`¿Eliminar el ítem ${itemLetter(i)}?`)) {
+  if (
+    !confirm(
+      `¿Deseas eliminar el ítem ${itemLetter(i)}?`
+    )
+  ) {
     return;
   }
 
@@ -53,6 +84,11 @@ function removeProduct(i) {
   renderProducts();
   renderFindings();
 }
+
+
+/* =========================================================
+   TABLA DE PRODUCTOS
+   ========================================================= */
 
 function renderProducts() {
 
@@ -120,161 +156,192 @@ function renderProducts() {
     </tr>
   `).join("");
 
-  tbody.querySelectorAll("input").forEach(inp => {
+  tbody
+    .querySelectorAll("input")
+    .forEach(input => {
 
-    inp.addEventListener("input", () => {
+      input.addEventListener(
+        "input",
+        () => {
 
-      const index = Number(inp.dataset.p);
-      const key = inp.dataset.k;
+          const index =
+            Number(input.dataset.p);
 
-      if (products[index]) {
-        products[index][key] = inp.value;
-      }
+          const key =
+            input.dataset.k;
+
+          if (products[index]) {
+            products[index][key] =
+              input.value;
+          }
+
+        }
+      );
 
     });
-
-  });
 }
+
 
 if ($("addProduct")) {
-  $("addProduct").addEventListener("click", () => addProduct());
+
+  $("addProduct").addEventListener(
+    "click",
+    () => addProduct()
+  );
+
 }
 
+
 /* =========================================================
-   HALLAZGOS Y FOTOGRAFÍAS
+   HALLAZGOS
    ========================================================= */
 
 function renderFindings() {
 
-  const container = $("findings");
+  const container =
+    $("findings");
 
   if (!container) return;
 
-  container.innerHTML = products.map((p, i) => `
+  container.innerHTML =
+    products.map((p, i) => `
 
-    <div class="finding">
+      <div class="finding">
 
-      <div class="item-title">
-        ÍTEM ${itemLetter(i)} ·
-        ${esc(p.producto || "Producto pendiente")}
-      </div>
+        <div class="item-title">
+          ÍTEM ${itemLetter(i)} ·
+          ${esc(
+            p.producto ||
+            "Producto pendiente"
+          )}
+        </div>
 
-      <div class="finding-body">
+        <div class="finding-body">
 
-        <label>
-          Descripción de los hallazgos
+          <label>
+            Descripción de los hallazgos
 
-          <textarea
-            data-h="${i}"
-            placeholder="Describa el hallazgo correspondiente al ítem ${itemLetter(i)}"
-          >${esc(p.hallazgo)}</textarea>
+            <textarea
+              data-h="${i}"
+              placeholder="Describa el hallazgo correspondiente al ítem ${itemLetter(i)}"
+            >${esc(p.hallazgo)}</textarea>
 
-        </label>
+          </label>
 
-        <label style="margin-top:10px">
-          Resultado del reclamo
+          <label style="margin-top:10px">
+            Resultado del reclamo
 
-          <select data-d="${i}">
+            <select data-d="${i}">
 
-            <option value="">
-              Seleccione...
-            </option>
+              <option value="">
+                Seleccione...
+              </option>
 
-            <option
-              value="PROCEDE"
-              ${p.decision === "PROCEDE" ? "selected" : ""}
-            >
-              PROCEDE
-            </option>
+              <option
+                value="PROCEDE"
+                ${p.decision === "PROCEDE"
+                  ? "selected"
+                  : ""}
+              >
+                PROCEDE
+              </option>
 
-            <option
-              value="NO PROCEDE"
-              ${p.decision === "NO PROCEDE" ? "selected" : ""}
-            >
-              NO PROCEDE
-            </option>
+              <option
+                value="NO PROCEDE"
+                ${p.decision === "NO PROCEDE"
+                  ? "selected"
+                  : ""}
+              >
+                NO PROCEDE
+              </option>
 
-          </select>
+            </select>
 
-        </label>
+          </label>
 
-        <div class="photo-area">
 
-          <strong>
-            Evidencia fotográfica del ítem ${itemLetter(i)}
-          </strong>
+          <div class="photo-area">
 
-          <div class="photo-actions">
+            <strong>
+              Evidencia fotográfica del ítem
+              ${itemLetter(i)}
+            </strong>
 
-            <button
-              type="button"
-              class="primary"
-              onclick="openCamera(${i})"
-            >
-              📷 Tomar foto
-            </button>
+            <div class="photo-actions">
 
-            <button
-              type="button"
-              class="secondary"
-              onclick="openGallery(${i})"
-            >
-              🖼 Seleccionar foto
-            </button>
+              <button
+                type="button"
+                class="primary"
+                onclick="openCamera(${i})"
+              >
+                📷 Tomar foto
+              </button>
 
-            <input
-              class="photo-input"
-              id="camera-${i}"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onchange="handlePhoto(event,${i})"
-            >
+              <button
+                type="button"
+                class="secondary"
+                onclick="openGallery(${i})"
+              >
+                🖼 Seleccionar foto
+              </button>
 
-            <input
-              class="photo-input"
-              id="gallery-${i}"
-              type="file"
-              accept="image/*"
-              multiple
-              onchange="handlePhoto(event,${i})"
-            >
+              <input
+                class="photo-input"
+                id="camera-${i}"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onchange="handlePhoto(event,${i})"
+              >
 
-          </div>
+              <input
+                class="photo-input"
+                id="gallery-${i}"
+                type="file"
+                accept="image/*"
+                multiple
+                onchange="handlePhoto(event,${i})"
+              >
 
-          <div class="photo-note">
+            </div>
 
-            ${p.photos.length}
-            foto(s).
-            Se comprimirán antes de subirlas a Google Drive.
 
-          </div>
+            <div class="photo-note">
 
-          <div class="photo-grid">
+              ${p.photos.length}
+              foto(s).
+              Se comprimirán antes de subirlas a Google Drive.
 
-            ${p.photos.map((ph, j) => `
+            </div>
 
-              <div class="photo-card">
 
-                <img
-                  src="${esc(ph.dataUrl || "")}"
-                  alt="Foto ${j + 1} del ítem ${itemLetter(i)}"
-                >
+            <div class="photo-grid">
 
-                <button
-                  type="button"
-                  onclick="removePhoto(${i},${j})"
-                >
-                  Eliminar
-                </button>
+              ${p.photos.map((ph, j) => `
 
-                <div class="photo-name">
-                  Foto ${j + 1}
+                <div class="photo-card">
+
+                  <img
+                    src="${esc(ph.dataUrl || "")}"
+                    alt="Foto ${j + 1}"
+                  >
+
+                  <button
+                    type="button"
+                    onclick="removePhoto(${i},${j})"
+                  >
+                    Eliminar
+                  </button>
+
+                  <div class="photo-name">
+                    Foto ${j + 1}
+                  </div>
+
                 </div>
 
-              </div>
+              `).join("")}
 
-            `).join("")}
+            </div>
 
           </div>
 
@@ -282,49 +349,71 @@ function renderFindings() {
 
       </div>
 
-    </div>
+    `).join("");
 
-  `).join("");
 
   container
-    .querySelectorAll("textarea[data-h]")
+    .querySelectorAll(
+      "textarea[data-h]"
+    )
     .forEach(el => {
 
-      el.addEventListener("input", () => {
+      el.addEventListener(
+        "input",
+        () => {
 
-        const index = Number(el.dataset.h);
+          const index =
+            Number(el.dataset.h);
 
-        if (products[index]) {
-          products[index].hallazgo = el.value;
+          if (products[index]) {
+            products[index].hallazgo =
+              el.value;
+          }
+
         }
-
-      });
+      );
 
     });
 
+
   container
-    .querySelectorAll("select[data-d]")
+    .querySelectorAll(
+      "select[data-d]"
+    )
     .forEach(el => {
 
-      el.addEventListener("change", () => {
+      el.addEventListener(
+        "change",
+        () => {
 
-        const index = Number(el.dataset.d);
+          const index =
+            Number(el.dataset.d);
 
-        if (products[index]) {
-          products[index].decision = el.value;
+          if (products[index]) {
+
+            products[index].decision =
+              el.value;
+
+          }
+
+          autoConclusion();
+
         }
-
-        autoConclusion();
-
-      });
+      );
 
     });
 
 }
 
+
+/* =========================================================
+   CÁMARA / GALERÍA
+   ========================================================= */
+
 function openCamera(i) {
 
-  const input = $("camera-" + i);
+  const input =
+    $("camera-" + i);
 
   if (input) {
     input.click();
@@ -334,7 +423,8 @@ function openCamera(i) {
 
 function openGallery(i) {
 
-  const input = $("gallery-" + i);
+  const input =
+    $("gallery-" + i);
 
   if (input) {
     input.click();
@@ -342,13 +432,15 @@ function openGallery(i) {
 
 }
 
+
 /* =========================================================
    FOTOGRAFÍAS
    ========================================================= */
 
 async function handlePhoto(e, i) {
 
-  const files = [...(e.target.files || [])];
+  const files =
+    [...(e.target.files || [])];
 
   if (!files.length) {
     return;
@@ -366,17 +458,24 @@ async function handlePhoto(e, i) {
         `Procesando fotografía del ítem ${itemLetter(i)}...`
       );
 
-      const dataUrl = await compressImage(
-        file,
-        1600,
-        0.78
-      );
+      /*
+       * Compresión real en el celular.
+       */
+      const dataUrl =
+        await compressImage(
+          file,
+          1600,
+          0.78
+        );
 
       products[i].photos.push({
+
         dataUrl,
+
         name:
           file.name ||
           `foto_${Date.now()}.jpg`
+
       });
 
     } catch (err) {
@@ -396,6 +495,7 @@ async function handlePhoto(e, i) {
 
 }
 
+
 function removePhoto(i, j) {
 
   if (!products[i]) return;
@@ -406,15 +506,10 @@ function removePhoto(i, j) {
 
 }
 
-/*
- * Compresión real en el navegador.
- *
- * Esto reduce:
- * - resolución
- * - peso JPEG
- *
- * Antes de enviarlo a Apps Script.
- */
+
+/* =========================================================
+   COMPRESIÓN DE IMAGEN
+   ========================================================= */
 
 function compressImage(
   file,
@@ -422,102 +517,168 @@ function compressImage(
   quality = 0.78
 ) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (resolve, reject) => {
 
-    const reader = new FileReader();
+      const reader =
+        new FileReader();
 
-    reader.onerror = () => {
-      reject(
-        new Error("No se pudo leer la imagen.")
+      reader.onerror =
+        () => {
+
+          reject(
+            new Error(
+              "No se pudo leer la imagen."
+            )
+          );
+
+        };
+
+
+      reader.onload =
+        () => {
+
+          const img =
+            new Image();
+
+          img.onload =
+            () => {
+
+              let w =
+                img.naturalWidth;
+
+              let h =
+                img.naturalHeight;
+
+              if (!w || !h) {
+
+                reject(
+                  new Error(
+                    "La imagen no tiene dimensiones válidas."
+                  )
+                );
+
+                return;
+              }
+
+
+              const scale =
+                Math.min(
+                  1,
+                  maxSide /
+                  Math.max(w, h)
+                );
+
+
+              w =
+                Math.round(
+                  w * scale
+                );
+
+              h =
+                Math.round(
+                  h * scale
+                );
+
+
+              const canvas =
+                document.createElement(
+                  "canvas"
+                );
+
+              canvas.width =
+                w;
+
+              canvas.height =
+                h;
+
+
+              const ctx =
+                canvas.getContext(
+                  "2d",
+                  {
+                    alpha: false
+                  }
+                );
+
+
+              if (!ctx) {
+
+                reject(
+                  new Error(
+                    "No se pudo preparar la imagen."
+                  )
+                );
+
+                return;
+              }
+
+
+              ctx.drawImage(
+                img,
+                0,
+                0,
+                w,
+                h
+              );
+
+
+              const dataUrl =
+                canvas.toDataURL(
+                  "image/jpeg",
+                  quality
+                );
+
+
+              if (
+                !dataUrl ||
+                dataUrl.length < 100
+              ) {
+
+                reject(
+                  new Error(
+                    "No se pudo comprimir la imagen."
+                  )
+                );
+
+                return;
+              }
+
+
+              resolve(
+                dataUrl
+              );
+
+            };
+
+
+          img.onerror =
+            () => {
+
+              reject(
+                new Error(
+                  "Imagen no válida."
+                )
+              );
+
+            };
+
+
+          img.src =
+            reader.result;
+
+        };
+
+
+      reader.readAsDataURL(
+        file
       );
-    };
 
-    reader.onload = () => {
-
-      const img = new Image();
-
-      img.onload = () => {
-
-        let w = img.naturalWidth;
-        let h = img.naturalHeight;
-
-        if (!w || !h) {
-          reject(
-            new Error("La imagen no tiene dimensiones válidas.")
-          );
-          return;
-        }
-
-        const largestSide = Math.max(w, h);
-
-        const scale = Math.min(
-          1,
-          maxSide / largestSide
-        );
-
-        w = Math.round(w * scale);
-        h = Math.round(h * scale);
-
-        const canvas =
-          document.createElement("canvas");
-
-        canvas.width = w;
-        canvas.height = h;
-
-        const ctx =
-          canvas.getContext("2d", {
-            alpha: false
-          });
-
-        if (!ctx) {
-          reject(
-            new Error("No se pudo preparar la imagen.")
-          );
-          return;
-        }
-
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          w,
-          h
-        );
-
-        const result =
-          canvas.toDataURL(
-            "image/jpeg",
-            quality
-          );
-
-        if (!result || result.length < 100) {
-          reject(
-            new Error("No se pudo comprimir la imagen.")
-          );
-          return;
-        }
-
-        resolve(result);
-
-      };
-
-      img.onerror = () => {
-
-        reject(
-          new Error("Imagen no válida.")
-        );
-
-      };
-
-      img.src = reader.result;
-
-    };
-
-    reader.readAsDataURL(file);
-
-  });
+    }
+  );
 
 }
+
 
 /* =========================================================
    CONCLUSIÓN
@@ -527,8 +688,11 @@ function autoConclusion() {
 
   const decisions =
     products
-      .map(p => p.decision)
+      .map(
+        p => p.decision
+      )
       .filter(Boolean);
+
 
   if (!decisions.length) {
 
@@ -539,7 +703,11 @@ function autoConclusion() {
     return;
   }
 
-  if (!$("conclusion")) return;
+
+  if (!$("conclusion")) {
+    return;
+  }
+
 
   if (
     decisions.every(
@@ -547,7 +715,8 @@ function autoConclusion() {
     )
   ) {
 
-    $("conclusion").value = "PROCEDE";
+    $("conclusion").value =
+      "PROCEDE";
 
   } else if (
     decisions.every(
@@ -555,27 +724,22 @@ function autoConclusion() {
     )
   ) {
 
-    $("conclusion").value = "NO PROCEDE";
+    $("conclusion").value =
+      "NO PROCEDE";
 
   } else {
 
-    $("conclusion").value = "";
+    $("conclusion").value =
+      "";
 
   }
 
 }
 
+
 /* =========================================================
-   OBTENER DATOS
+   DATOS DEL REPORTE
    ========================================================= */
-
-function getValue(id) {
-
-  const el = $(id);
-
-  return el ? el.value.trim() : "";
-
-}
 
 function getData() {
 
@@ -608,47 +772,53 @@ function getData() {
       getValue("vendedor"),
 
     descripcionReclamo:
-      getValue("descripcionReclamo"),
+      getValue(
+        "descripcionReclamo"
+      ),
 
     productos:
-      products.map((p, i) => ({
+      products.map(
+        (p, i) => ({
 
-        item:
-          itemLetter(i),
+          item:
+            itemLetter(i),
 
-        producto:
-          p.producto,
+          producto:
+            p.producto,
 
-        lote:
-          p.lote,
+          lote:
+            p.lote,
 
-        fv:
-          p.fv,
+          fv:
+            p.fv,
 
-        cantidad:
-          p.cantidad,
+          cantidad:
+            p.cantidad,
 
-        hallazgo:
-          p.hallazgo,
+          hallazgo:
+            p.hallazgo,
 
-        decision:
-          p.decision,
+          decision:
+            p.decision,
 
-        photos:
-          p.photos.map((x, j) => ({
+          photos:
+            p.photos.map(
+              (x, j) => ({
 
-            index:
-              j + 1,
+                index:
+                  j + 1,
 
-            name:
-              x.name,
+                name:
+                  x.name,
 
-            dataUrl:
-              x.dataUrl
+                dataUrl:
+                  x.dataUrl
 
-          }))
+              })
+            )
 
-      })),
+        })
+      ),
 
     destino:
       getValue("destino"),
@@ -657,17 +827,24 @@ function getData() {
       getValue("conclusion"),
 
     accionCorrectiva:
-      getValue("accionCorrectiva"),
+      getValue(
+        "accionCorrectiva"
+      ),
 
     preparadoPor:
-      getValue("preparadoPor"),
+      getValue(
+        "preparadoPor"
+      ),
 
     aprobadoPor:
-      getValue("aprobadoPor")
+      getValue(
+        "aprobadoPor"
+      )
 
   };
 
 }
+
 
 /* =========================================================
    URL DE APPS SCRIPT
@@ -676,16 +853,15 @@ function getData() {
 function getAppsScriptUrl() {
 
   const url =
-    window.APP_CONFIG?.APPS_SCRIPT_URL ||
-    "";
+    window.APP_CONFIG &&
+    window.APP_CONFIG.APPS_SCRIPT_URL
+      ? window.APP_CONFIG.APPS_SCRIPT_URL
+      : "";
 
   return String(url).trim();
 
 }
 
-/* =========================================================
-   VALIDAR URL
-   ========================================================= */
 
 function validateAppsScriptUrl(url) {
 
@@ -697,17 +873,22 @@ function validateAppsScriptUrl(url) {
 
   }
 
+
   if (
-    url.includes("PEGAR_AQUI") ||
-    url.includes("TU_URL") ||
-    url.includes("XXXXXXXX")
+    url.includes(
+      "PEGAR_AQUI"
+    ) ||
+    url.includes(
+      "TU_URL"
+    )
   ) {
 
     throw new Error(
-      "La URL de Google Apps Script todavía no está configurada."
+      "Debes colocar la URL real de Google Apps Script."
     );
 
   }
+
 
   if (
     !url.startsWith(
@@ -721,7 +902,12 @@ function validateAppsScriptUrl(url) {
 
   }
 
-  if (!url.endsWith("/exec")) {
+
+  if (
+    !url.endsWith(
+      "/exec"
+    )
+  ) {
 
     throw new Error(
       "La URL de Apps Script debe terminar en /exec. No uses /dev."
@@ -731,20 +917,27 @@ function validateAppsScriptUrl(url) {
 
 }
 
+
 /* =========================================================
    GENERAR REPORTE
    ========================================================= */
 
 async function generateReport() {
 
-  if (busy) return;
+  if (busy) {
+    return;
+  }
+
 
   const url =
     getAppsScriptUrl();
 
+
   try {
 
-    validateAppsScriptUrl(url);
+    validateAppsScriptUrl(
+      url
+    );
 
   } catch (err) {
 
@@ -756,6 +949,7 @@ async function generateReport() {
 
   }
 
+
   if (!products.length) {
 
     showError(
@@ -766,8 +960,10 @@ async function generateReport() {
 
   }
 
+
   const data =
     getData();
+
 
   /* -------------------------------------------------------
      VALIDACIONES
@@ -778,7 +974,9 @@ async function generateReport() {
     of products.entries()
   ) {
 
-    if (!p.producto.trim()) {
+    if (
+      !p.producto.trim()
+    ) {
 
       showError(
         `Completa el producto del ítem ${itemLetter(i)}.`
@@ -788,7 +986,10 @@ async function generateReport() {
 
     }
 
-    if (!p.hallazgo.trim()) {
+
+    if (
+      !p.hallazgo.trim()
+    ) {
 
       showError(
         `Completa el hallazgo del ítem ${itemLetter(i)}.`
@@ -797,6 +998,7 @@ async function generateReport() {
       return;
 
     }
+
 
     if (!p.decision) {
 
@@ -810,20 +1012,21 @@ async function generateReport() {
 
   }
 
-  /* -------------------------------------------------------
-     INICIO
-     ------------------------------------------------------- */
 
   busy = true;
 
+
   if ($("generate")) {
-    $("generate").disabled = true;
+    $("generate").disabled =
+      true;
   }
+
 
   try {
 
     const reportKey =
       `${data.nReporte || "SIN_NUMERO"}_${Date.now()}`;
+
 
     const total =
       data.productos.reduce(
@@ -832,7 +1035,9 @@ async function generateReport() {
         0
       );
 
+
     let done = 0;
+
 
     /* -----------------------------------------------------
        SUBIR FOTOGRAFÍAS
@@ -850,15 +1055,21 @@ async function generateReport() {
 
         done++;
 
+
         setProgress(
           `Subiendo foto ${done} de ${total} · Ítem ${p.item}...`
         );
 
-        const parts =
-          String(ph.dataUrl || "")
-            .split(",");
 
-        if (parts.length < 2) {
+        const parts =
+          String(
+            ph.dataUrl || ""
+          ).split(",");
+
+
+        if (
+          parts.length < 2
+        ) {
 
           throw new Error(
             `La fotografía ${ph.index} del ítem ${p.item} no tiene un formato válido.`
@@ -866,8 +1077,10 @@ async function generateReport() {
 
         }
 
+
         const b64 =
           parts[1];
+
 
         const res =
           await postJSON(
@@ -895,7 +1108,11 @@ async function generateReport() {
             }
           );
 
-        if (!res || !res.ok) {
+
+        if (
+          !res ||
+          !res.ok
+        ) {
 
           throw new Error(
             res?.error ||
@@ -904,12 +1121,14 @@ async function generateReport() {
 
         }
 
+
         ph.fileId =
           res.fileId;
 
       }
 
     }
+
 
     /* -----------------------------------------------------
        GENERAR PDF
@@ -919,10 +1138,12 @@ async function generateReport() {
       "Generando el reporte PDF..."
     );
 
+
     const clean = {
       ...data,
       reportKey
     };
+
 
     clean.productos =
       clean.productos.map(
@@ -949,6 +1170,7 @@ async function generateReport() {
         })
       );
 
+
     const result =
       await postJSON(
         url,
@@ -963,7 +1185,11 @@ async function generateReport() {
         }
       );
 
-    if (!result || !result.ok) {
+
+    if (
+      !result ||
+      !result.ok
+    ) {
 
       throw new Error(
         result?.error ||
@@ -972,14 +1198,19 @@ async function generateReport() {
 
     }
 
+
     if ($("progress")) {
+
       $("progress")
         .classList
         .add("hidden");
+
     }
+
 
     const pdfUrl =
       result.pdfUrl || "";
+
 
     if (!pdfUrl) {
 
@@ -988,6 +1219,7 @@ async function generateReport() {
       );
 
     }
+
 
     $("result").innerHTML = `
 
@@ -1018,38 +1250,49 @@ async function generateReport() {
 
     `;
 
+
   } catch (err) {
 
     if ($("progress")) {
+
       $("progress")
         .classList
         .add("hidden");
+
     }
 
+
     console.error(
-      "ERROR GENERANDO REPORTE:",
+      "ERROR:",
       err
     );
+
 
     showError(
       err?.message ||
       String(err)
     );
 
+
   } finally {
 
     busy = false;
 
+
     if ($("generate")) {
-      $("generate").disabled = false;
+
+      $("generate").disabled =
+        false;
+
     }
 
   }
 
 }
 
+
 /* =========================================================
-   POST A APPS SCRIPT
+   COMUNICACIÓN CON APPS SCRIPT
    ========================================================= */
 
 async function postJSON(
@@ -1059,17 +1302,8 @@ async function postJSON(
 
   let response;
 
-  try {
 
-    /*
-     * IMPORTANTE:
-     *
-     * NO usamos application/json.
-     *
-     * Usamos text/plain para evitar que el navegador
-     * haga un preflight OPTIONS que Apps Script no maneja
-     * correctamente como API CORS.
-     */
+  try {
 
     response =
       await fetch(
@@ -1088,220 +1322,116 @@ async function postJSON(
           cache:
             "no-store",
 
+          /*
+           * NO cambiar a application/json.
+           *
+           * Apps Script recibe el JSON mediante:
+           *
+           * e.postData.contents
+           *
+           * aunque el Content-Type sea text/plain.
+           */
+
           headers:
             {
-
               "Content-Type":
                 "text/plain;charset=utf-8"
-
             },
 
           body:
-            JSON.stringify(payload)
+            JSON.stringify(
+              payload
+            )
 
         }
       );
 
-  } catch (networkError) {
+
+  } catch (err) {
 
     throw new Error(
       "No se pudo conectar con Google Apps Script. " +
-      "Verifica que la implementación esté activa, " +
-      "que la URL termine en /exec y que el acceso de la aplicación web permita utilizarla."
+      "Verifica la implementación /exec y su configuración de acceso."
     );
 
   }
 
+
   const text =
     await response.text();
 
+
   /*
-   * Apps Script debe devolver JSON.
+   * Intentamos interpretar SIEMPRE como JSON.
    */
 
   try {
 
-    const result =
-      JSON.parse(text);
+    return JSON.parse(
+      text
+    );
 
-    return result;
-
-  } catch (jsonError) {
+  } catch (e) {
 
     console.error(
       "Respuesta recibida desde Apps Script:",
       text
     );
 
+
     /*
-     * Detectar HTML de Google.
+     * Si Google devolvió HTML,
+     * mostramos un mensaje entendible.
      */
 
-    const lower =
-      text.toLowerCase();
-
     if (
-      lower.includes("<!doctype html") ||
-      lower.includes("<html") ||
-      lower.includes("google")
+      text.includes(
+        "<!DOCTYPE html"
+      ) ||
+      text.includes(
+        "<!doctype html"
+      ) ||
+      text.includes(
+        "<html"
+      )
     ) {
 
       throw new Error(
-        "Google Apps Script devolvió una página HTML en lugar de JSON. " +
-        "Verifica que la URL configurada sea la implementación /exec " +
-        "y que la aplicación web tenga acceso permitido."
+        "Respuesta no válida del servidor. " +
+        "Google Apps Script está devolviendo una página HTML en lugar de JSON. " +
+        "Verifica que la URL configurada sea la implementación /exec y no /dev."
       );
 
     }
+
 
     throw new Error(
       "Respuesta no válida del servidor: " +
-      text.slice(0, 500)
+      text.slice(
+        0,
+        500
+      )
     );
 
   }
 
 }
 
-/* =========================================================
-   PROBAR CONEXIÓN
-   ========================================================= */
-
-async function testAppsScriptConnection() {
-
-  const url =
-    getAppsScriptUrl();
-
-  try {
-
-    validateAppsScriptUrl(url);
-
-  } catch (err) {
-
-    showError(
-      err.message
-    );
-
-    return;
-
-  }
-
-  setProgress(
-    "Comprobando conexión con Google Apps Script..."
-  );
-
-  try {
-
-    /*
-     * GET de prueba.
-     *
-     * Tu Code.gs tiene doGet() y debería devolver JSON.
-     */
-
-    const response =
-      await fetch(
-        url +
-        (
-          url.includes("?")
-            ? "&"
-            : "?"
-        ) +
-        "check=" +
-        Date.now(),
-        {
-
-          method:
-            "GET",
-
-          mode:
-            "cors",
-
-          redirect:
-            "follow",
-
-          cache:
-            "no-store"
-
-        }
-      );
-
-    const text =
-      await response.text();
-
-    let result;
-
-    try {
-
-      result =
-        JSON.parse(text);
-
-    } catch (e) {
-
-      console.error(
-        "Respuesta HTML de prueba:",
-        text
-      );
-
-      throw new Error(
-        "Apps Script está devolviendo HTML en lugar de JSON. " +
-        "La implementación /exec debe revisarse."
-      );
-
-    }
-
-    if (!result.ok) {
-
-      throw new Error(
-        result.error ||
-        "Apps Script respondió pero indicó un error."
-      );
-
-    }
-
-    if ($("progress")) {
-      $("progress")
-        .classList
-        .add("hidden");
-    }
-
-    if ($("status")) {
-
-      $("status").textContent =
-        "Google Apps Script conectado correctamente.";
-
-    }
-
-    return result;
-
-  } catch (err) {
-
-    if ($("progress")) {
-      $("progress")
-        .classList
-        .add("hidden");
-    }
-
-    showError(
-      "No se pudo comprobar la conexión: " +
-      (err.message || err)
-    );
-
-    return null;
-
-  }
-
-}
 
 /* =========================================================
    PROGRESO
    ========================================================= */
 
-function setProgress(msg) {
+function setProgress(
+  msg
+) {
 
   const progress =
     $("progress");
 
-  if (!progress) return;
+  if (!progress) {
+    return;
+  }
 
   progress.textContent =
     msg;
@@ -1312,11 +1442,14 @@ function setProgress(msg) {
 
 }
 
+
 /* =========================================================
-   ERRORES
+   ERROR
    ========================================================= */
 
-function showError(msg) {
+function showError(
+  msg
+) {
 
   const result =
     $("result");
@@ -1330,6 +1463,7 @@ function showError(msg) {
     return;
 
   }
+
 
   result.innerHTML = `
 
@@ -1345,37 +1479,6 @@ function showError(msg) {
 
 }
 
-/* =========================================================
-   ESCAPAR HTML
-   ========================================================= */
-
-function esc(v) {
-
-  return String(
-    v ?? ""
-  ).replace(
-    /[&<>"']/g,
-    m => ({
-
-      "&":
-        "&amp;",
-
-      "<":
-        "&lt;",
-
-      ">":
-        "&gt;",
-
-      '"':
-        "&quot;",
-
-      "'":
-        "&#39;"
-
-    }[m])
-  );
-
-}
 
 /* =========================================================
    BORRADOR
@@ -1384,14 +1487,12 @@ function esc(v) {
 function draftObject() {
 
   return {
-
     ...getData(),
-
     products
-
   };
 
 }
+
 
 if ($("saveDraft")) {
 
@@ -1409,6 +1510,7 @@ if ($("saveDraft")) {
             )
           );
 
+
           if ($("status")) {
 
             $("status").textContent =
@@ -1416,11 +1518,12 @@ if ($("saveDraft")) {
 
           }
 
+
         } catch (e) {
 
           showError(
             "No se pudo guardar el borrador. " +
-            "Las fotografías pueden ocupar demasiado espacio en el almacenamiento local."
+            "Las fotografías no deben conservarse en localStorage."
           );
 
         }
@@ -1429,6 +1532,7 @@ if ($("saveDraft")) {
     );
 
 }
+
 
 if ($("loadDraft")) {
 
@@ -1442,6 +1546,7 @@ if ($("loadDraft")) {
             "reclamos_draft"
           );
 
+
         if (!raw) {
 
           showError(
@@ -1452,11 +1557,15 @@ if ($("loadDraft")) {
 
         }
 
+
         try {
 
           loadData(
-            JSON.parse(raw)
+            JSON.parse(
+              raw
+            )
           );
+
 
           if ($("status")) {
 
@@ -1464,6 +1573,7 @@ if ($("loadDraft")) {
               "Borrador cargado.";
 
           }
+
 
         } catch (e) {
 
@@ -1477,6 +1587,7 @@ if ($("loadDraft")) {
     );
 
 }
+
 
 if ($("clearDraft")) {
 
@@ -1495,6 +1606,7 @@ if ($("clearDraft")) {
             "reclamos_draft"
           );
 
+
           if ($("status")) {
 
             $("status").textContent =
@@ -1509,14 +1621,14 @@ if ($("clearDraft")) {
 
 }
 
+
 /* =========================================================
-   CARGAR DATOS
+   CARGAR BORRADOR
    ========================================================= */
 
 function loadData(d) {
 
-  const fields = [
-
+  [
     "nReporte",
     "fecha",
     "cliente",
@@ -1532,9 +1644,7 @@ function loadData(d) {
     "preparadoPor",
     "aprobadoPor"
 
-  ];
-
-  fields.forEach(
+  ].forEach(
     id => {
 
       if (
@@ -1549,6 +1659,7 @@ function loadData(d) {
 
     }
   );
+
 
   products =
     (d.productos || [])
@@ -1574,20 +1685,24 @@ function loadData(d) {
             p.decision || "",
 
           photos:
-            Array.isArray(p.photos)
+            Array.isArray(
+              p.photos
+            )
               ? p.photos
               : []
 
         })
       );
 
+
   renderProducts();
   renderFindings();
 
 }
 
+
 /* =========================================================
-   EVENTOS
+   BOTÓN GENERAR
    ========================================================= */
 
 if ($("generate")) {
@@ -1600,23 +1715,9 @@ if ($("generate")) {
 
 }
 
-/*
- * Si existe un botón con id="testConnection",
- * permite probar Apps Script manualmente.
- */
-
-if ($("testConnection")) {
-
-  $("testConnection")
-    .addEventListener(
-      "click",
-      testAppsScriptConnection
-    );
-
-}
 
 /* =========================================================
-   INICIALIZACIÓN
+   INICIO
    ========================================================= */
 
 renderProducts();
