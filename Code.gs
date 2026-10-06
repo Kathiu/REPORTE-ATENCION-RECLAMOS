@@ -269,7 +269,7 @@ function addPhotos_(body,p){
     const r=Math.floor(i/2),c=i%2,ph=photos[i];
     const cell=t.getCell(r,c);
     cell.clear();
-    const par=cell.appendParagraph();
+    const par=cell.appendParagraph("");
     par.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
     try{
       const file=DriveApp.getFileById(ph.fileId);
