@@ -450,7 +450,14 @@ async function handlePhoto(e, i) {
     return;
   }
 
-  for (const file of files) {
+  const remaining = Math.max(0, 12 - products[i].photos.length);
+  if (!remaining) {
+    showError(`El ítem ${itemLetter(i)} ya tiene el máximo de 12 fotografías.`);
+    e.target.value = "";
+    return;
+  }
+
+  for (const file of files.slice(0, remaining)) {
 
     try {
 
@@ -464,8 +471,8 @@ async function handlePhoto(e, i) {
       const dataUrl =
         await compressImage(
           file,
-          1600,
-          0.78
+          1200,
+          0.62
         );
 
       products[i].photos.push({
@@ -514,7 +521,7 @@ function removePhoto(i, j) {
 function compressImage(
   file,
   maxSide = 1600,
-  quality = 0.78
+  quality = 0.62
 ) {
 
   return new Promise(
@@ -1737,6 +1744,27 @@ if ($("generate")) {
 
 renderProducts();
 renderFindings();
+
+/* =========================================================
+   COMPROBACIÓN DEL BACKEND
+   ========================================================= */
+async function checkBackend() {
+  const url = getAppsScriptUrl();
+  if (!url) return;
+  try {
+    const r = await fetch(url + "?action=health", { method: "GET", cache: "no-store" });
+    const t = await r.text();
+    const j = JSON.parse(t);
+    if (j && j.ok && $("status")) {
+      $("status").textContent = "Google Apps Script conectado · versión " + (j.version || "");
+    }
+  } catch (err) {
+    if ($("status")) {
+      $("status").textContent = "Backend no verificado. Revisa la implementación /exec de Apps Script.";
+    }
+    console.warn("Backend:", err);
+  }
+}
 
 if (!products.length) {
   addProduct();
