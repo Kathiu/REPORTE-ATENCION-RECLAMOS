@@ -12,7 +12,7 @@ function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     ok:true,
     service:"REPORTE_ATENCION_RECLAMOS",
-    version:"1.4"
+    version:"1.3"
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
