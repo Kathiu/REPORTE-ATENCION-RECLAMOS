@@ -1299,6 +1299,9 @@ async function postJSON(
   url,
   payload
 ) {
+  // Comunicación centralizada con Apps Script.
+  // Conservamos text/plain porque evita el preflight de CORS.
+
 
   let response;
 
@@ -1396,10 +1399,18 @@ async function postJSON(
       )
     ) {
 
+      const compactHtml = text
+        .replace(/\\s+/g, " ")
+        .trim()
+        .slice(0, 220);
+
       throw new Error(
-        "Respuesta no válida del servidor. " +
-        "Google Apps Script está devolviendo una página HTML en lugar de JSON. " +
-        "Verifica que la URL configurada sea la implementación /exec y no /dev."
+        "Apps Script devolvió HTML en vez de JSON. " +
+        "HTTP " + response.status + ". " +
+        "La URL configurada es: " + url + ". " +
+        "Esto normalmente significa que la implementación /exec no está publicada " +
+        "para cualquier usuario o que la URL apunta a una implementación antigua. " +
+        "Respuesta: " + compactHtml
       );
 
     }
@@ -1485,12 +1496,16 @@ function showError(
    ========================================================= */
 
 function draftObject() {
+  // No guardamos fotografías Base64 en localStorage:
+  // pueden superar rápidamente el límite del navegador.
+  const data = getData();
 
-  return {
-    ...getData(),
-    products
-  };
+  data.productos = data.productos.map(p => ({
+    ...p,
+    photos: []
+  }));
 
+  return data;
 }
 
 
@@ -1522,8 +1537,8 @@ if ($("saveDraft")) {
         } catch (e) {
 
           showError(
-            "No se pudo guardar el borrador. " +
-            "Las fotografías no deben conservarse en localStorage."
+            "No se pudo guardar el borrador en este celular. " +
+            "Las fotografías se conservan solo durante el reporte actual y se suben a Drive al generar el reporte."
           );
 
         }
