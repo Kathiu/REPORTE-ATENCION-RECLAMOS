@@ -1769,3 +1769,5 @@ async function checkBackend() {
 if (!products.length) {
   addProduct();
 }
+
+checkBackend();
