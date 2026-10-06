@@ -15,7 +15,7 @@ function doGet(e) {
     return json_({
       ok: true,
       service: "REPORTE_ATENCION_RECLAMOS",
-      version: "1.4",
+      version: "1.5",
       action: action || "health",
       message: "Apps Script activo y respondiendo JSON."
     });
@@ -138,7 +138,7 @@ function generateReport_(d) {
   // Guardamos una copia pequeña de los datos del reporte para trazabilidad.
   const metadata = {
     service: "REPORTE_ATENCION_RECLAMOS",
-    version: "1.4",
+    version: "1.5",
     reportKey: d.reportKey,
     nReporte: d.nReporte || "",
     fecha: d.fecha || "",
@@ -272,11 +272,17 @@ function addPhotos_(body,p){
     const par=cell.appendParagraph("");
     par.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
     try{
-      const file=DriveApp.getFileById(ph.fileId);
-      const img=par.appendInlineImage(file.getBlob());
-      const maxW=220;
-      const w=img.getWidth(),hgt=img.getHeight();
-      if(w>maxW){img.setWidth(maxW);img.setHeight(Math.round(hgt*maxW/w));}
+      const reportBlob = getReportPhotoBlob_(ph.fileId);
+      const img = par.appendInlineImage(reportBlob);
+      const maxW = 220;
+      const maxH = 150;
+      const w = img.getWidth();
+      const hgt = img.getHeight();
+      const scale = Math.min(maxW / w, maxH / hgt, 1);
+      if (scale < 1) {
+        img.setWidth(Math.max(1, Math.round(w * scale)));
+        img.setHeight(Math.max(1, Math.round(hgt * scale)));
+      }
       const cap=cell.appendParagraph("Foto "+(ph.index||i+1));
       cap.setAlignment(DocumentApp.HorizontalAlignment.CENTER).setFontSize(9).setForegroundColor("#64748B");
     }catch(err){
@@ -305,6 +311,37 @@ function addClosing_(body,d){
   styleTable_(sig,"#F4F7FB");
   sig.getCell(0,0).getChild(0).asParagraph().setBold(true);
   sig.getCell(0,1).getChild(0).asParagraph().setBold(true);
+}
+
+function getReportPhotoBlob_(fileId){
+  // Obtiene una miniatura de Google Drive para el documento/PDF.
+  // La fotografía original NO se modifica ni se reemplaza.
+  // Si la miniatura no está disponible, usa el JPG original como respaldo.
+  try {
+    const url = "https://drive.google.com/thumbnail?id=" +
+      encodeURIComponent(fileId) + "&sz=w900";
+    const response = UrlFetchApp.fetch(url, {
+      method: "get",
+      headers: {
+        Authorization: "Bearer " + ScriptApp.getOAuthToken()
+      },
+      muteHttpExceptions: true,
+      followRedirects: true
+    });
+
+    const code = response.getResponseCode();
+    const blob = response.getBlob();
+
+    if (code >= 200 && code < 300 &&
+        blob && String(blob.getContentType()).indexOf("image/") === 0 &&
+        blob.getBytes().length > 0) {
+      return blob.setName("foto_reporte.jpg");
+    }
+  } catch (err) {
+    console.warn("No se pudo obtener miniatura de " + fileId + ": " + err);
+  }
+
+  return DriveApp.getFileById(fileId).getBlob();
 }
 
 function styleTable_(t,bg){
