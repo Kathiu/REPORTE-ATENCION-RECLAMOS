@@ -736,8 +736,11 @@ function autoConclusion() {
 
   } else {
 
-    $("conclusion").value =
-      "";
+    // Cuando hay decisiones mixtas (PROCEDE y NO PROCEDE),
+    // la conclusión queda a criterio del usuario y NO se borra.
+    // Esto permite editarla manualmente.
+
+    return;
 
   }
 
